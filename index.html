@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>fractal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" >
+    <style type="text/css">
+    .canvas {
+      background-color: rgb(250, 250, 250); 
+      width: 100%;
+      height: 100%;
+      margin: 1em;
+      padding: 1em;
+    }
+
+    .col-container {
+      display: block;
+      height: 94vh;
+    }
+
+  .loader {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    color: #4e4cb1;
+    font-size: 20px;
+  }
+
+
+}
+
+    </style>
+  </head>
+  <body>
+
+    <div id="loader" class="loader" v-show="computing">&#8987;</div>
+
+    <div class="container-fluid">
+      <div class="row">
+
+        <div class="col-sm-8 col-container">
+            <canvas id="canvas" class="canvas" width="150" height="150"></canvas>
+        </div>
+
+        <div class="col-sm col-container overflow-auto">
+          
+          <form id="config" >
+            
+
+            <div class="form-row mb-3">
+              <div class="col-4"> <label for="initialWidthBranch" >initial Width Branch</label> </div>
+              <div class="col">
+                <input id="initialWidthBranch" class="form-control-range form-control-sm" type="range" 
+                      min="1" max="50"  v-model.number="initialWidthBranch" v-bind:title="initialWidthBranch" v-on:input ="drawTree">
+                <small id="marginHelp" class="form-text text-muted"></small>
+              </div>
+            </div>
+
+            <div class="form-row mb-3">
+              <div class="col-4"><label for="initialLengthBranch">Initial Length Branch</label></div>
+              <div class="col">
+                <input id="initialLengthBranch" class="form-control form-control-sm" type="range" min="10" max="300"  
+                      v-model.number="initialLengthBranch" v-bind:title="initialLengthBranch" v-on:input ="drawTree">
+                <small id="initialLengthBranchHelp" class="form-text text-muted"></small>
+              </div>
+            </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="nbBranchesAtALevel">Nb Branches at a Level</label></div>
+                <div class="col">
+                  <input id="nbBranchesAtALevel" class="form-control form-control-sm" type="range" min="1" max="6" 
+                    v-model.number="nbBranchesAtALevel" v-bind:title="nbBranchesAtALevel" v-on:change ="drawTree">
+                  <small id="nbBranchesAtALevelHelp" class="form-text text-muted"></small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="branchDiminutionFactor">branch Diminution Factor</label></div>
+                <div class="col">
+                  <input id="branchDiminutionFactor"class="form-control form-control-sm"  
+                        type="range"  min="1" max="8" v-model.number="branchDiminutionFactor"
+                         v-bind:title="branchDiminutionFactor" v-on:change ="drawTree">
+                  <small id="branchDiminutionFactorHelp" class="form-text text-muted">shrink branch length and width at each recursion level</small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="branchMinLength">branch Min Length</label></div>
+                <div class="col">
+                  <input id="branchMinLength" class="form-control form-control-sm" type="range" min="5" max="100"  
+                      v-model.number="branchMinLength" v-bind:title="branchMinLength" v-on:change ="drawTree">
+                  <small id="branchMinLengthHelp" class="form-text text-muted">stop recursion if the new computed branch length is too short</small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="angleMax">angle Max</label></div>
+                <div class="col">
+                  <input id="angleMax" class="form-control form-control-sm" type="range" 
+                        min="0" max="720"  v-model.number="angleMax" v-bind:title="angleMax"
+                        v-on:input ="drawTree">
+                  <small id="angleMaxHelp" class="form-text text-muted">angle in which branches will spread over</small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="trunkColor">trunk Color</label></div>
+                <div class="col">
+                  <input id="trunkColor" class="form-control form-control-sm" type="color" 
+                        v-model="trunkColor"  v-bind:title="trunkColor" v-on:change="drawTree">
+                  <small id="trunkColorHelp" class="form-text text-muted"></small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"><label for="leafColor">leaf Color</label></div>
+                <div class="col">
+                  <input id="leafColor" class="form-control form-control-sm" type="color"  
+                      v-model="leafColor"  v-bind:title="leafColor" v-on:change="drawTree">
+                  <small id="leafColorHelp" class="form-text text-muted"></small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="col-4"> <label for="onlyDot">only Dots</label> </div>
+                <div class="col">
+                  <input id="onlyDot" class="form-check-input" type="checkbox" 
+                      v-model="onlyDot" v-on:change="drawTree">
+                  <small id="marginHelp" class="form-text text-muted"> </small>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" v-on:click="drawTree" type="button">draw tree</button>
+              <button class="btn btn-secondary" v-on:click="reset" type="button">reset</button>
+              Try this
+              <button class="btn btn-secondary" v-on:click="kali" type="button">kali</button>
+              <button class="btn btn-secondary" v-on:click="sorrow" type="button">sorrow</button>
+              <button class="btn btn-secondary" v-on:click="bandg" type="button">B&G</button>
+            </form>
+        </div>
+        
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js"></script>
+    <script src="./fractal.js"></script>
+
+  </body>
+</html>
